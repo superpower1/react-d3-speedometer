@@ -13,8 +13,19 @@ import {
   line as d3Line,
   curveMonotoneX as d3CurveMonotoneX,
   pie as d3Pie,
+
+  color as d3Color,
   rgb as d3Rgb,
+  hsl as d3Hsl,
+  hcl as d3Hcl,
+  // interpolation functions
   interpolateHsl as d3InterpolateHsl,
+  interpolateHslLong as d3InterpolateHslLong,
+  interpolateHcl as d3InterpolateHcl,
+  interpolateHclLong as d3InterpolateHclLong,
+  interpolateRgb as d3InterpolateRgb,
+  interpolateRgbBasis as d3InterpolateRgbBasis,
+  interpolateRgbBasisClosed as d3InterpolateRgbBasisClosed,
   // importing all the easing functions
   easeLinear as d3EaseLinear,
   easeQuadIn as d3EaseQuadIn,
@@ -147,7 +158,8 @@ class ReactSpeedometer extends React.Component {
         // segments in the speedometer
         majorTicks: PROPS.segments,
         // color range for the segments
-        arcColorFn: d3InterpolateHsl(d3Rgb(PROPS.startColor), d3Rgb(PROPS.endColor)),
+        // arcColorFn: d3InterpolateHsl(d3Rgb(PROPS.startColor), d3Rgb(PROPS.endColor)),
+        arcColorFn: getColorInterpolator(PROPS.colorInterpolator, PROPS.startColor, PROPS.endColor),
         // needle configuration
         needleTransition: PROPS.needleTransition,
         needleTransitionDuration: PROPS.needleTransitionDuration,
@@ -331,6 +343,36 @@ class ReactSpeedometer extends React.Component {
         // TODO: no need to update inside render;
         // we will explicitly call 'update' method when needed to update
         // update(newValue === undefined ? 0 : newValue);
+      }
+
+      // helper function to get color interpolator
+      // helper function to get interpolator function
+      function getColorInterpolator(interpolator, start_color, end_color) {
+        switch (interpolator) {
+          // hsl
+          case 'hsl':
+            return d3ScaleLinear().range([start_color, end_color]).interpolate( d3InterpolateHsl )
+            // return d3InterpolateHsl(d3Color(start_color), d3Color(end_color))
+          case 'hsl-long':
+            return d3ScaleLinear().range([start_color, end_color]).interpolate( d3InterpolateHslLong )
+            // return d3InterpolateHslLong(d3Color(start_color), d3Color(end_color))
+          // hcl
+          case 'hcl':
+            return d3ScaleLinear().range([start_color, end_color]).interpolate( d3InterpolateHcl )
+            // return d3InterpolateHcl(d3Color(start_color), d3Color(end_color))
+          case 'hcl-long':
+            return d3InterpolateHclLong(d3Color(start_color), d3Color(end_color))
+          // rgb
+          case 'rgb':
+            return d3InterpolateRgb(d3Color(start_color), d3Color(end_color))
+          case 'rgb-basis':
+            return d3InterpolateRgbBasis([d3Color(start_color), d3Color(end_color)])
+          case 'rgb-basis-closed':
+            return d3InterpolateRgbBasisClosed([d3Color(start_color), d3Color(end_color)])
+
+          default:
+            return d3InterpolateHsl(d3Color(start_color), d3Color(end_color))
+        }
       }
 
       // formats current value
@@ -578,7 +620,9 @@ ReactSpeedometer.propTypes = {
   // d3 format identifier is generally a string; default "" (empty string)
   valueFormat: PropTypes.string.isRequired,
   // value text format
-  currentValueText: PropTypes.string.isRequired
+  currentValueText: PropTypes.string.isRequired,
+  // color interpolator
+  colorInterpolator: PropTypes.string.isRequired
 }
 
 // define the default proptypes
@@ -616,7 +660,10 @@ ReactSpeedometer.defaultProps = {
 
   // value text string format; by default it just shows the value
   // takes es6 template string as input with a default ${value}
-  currentValueText: "${value}"
+  currentValueText: "${value}",
+
+  // color interpolator type => 'hcl', 'hsl' or 'rgb'
+  colorInterpolator: 'hcl'
 }
 
 export default ReactSpeedometer

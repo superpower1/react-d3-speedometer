@@ -274,3 +274,13 @@ storiesOf("react-d3-speedometer", module)
       return <MultiSpeedoMeters />
     })
   )
+  .add(
+    "color scheme change",
+    () => (
+      <div>
+        <ReactSpeedometer startColor="#FF471A" endColor="#33CC33" segments={10} />
+        <ReactSpeedometer startColor="#33CC33" endColor="#FF471A" segments={10} />
+      </div>
+    ),
+    { source: true, inline: true, header: false }
+  )
